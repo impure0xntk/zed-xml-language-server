@@ -1,0 +1,70 @@
+name: Publish Extension
+
+# Bump the extension version in zed-industries/extensions when a version tag is pushed
+# Updates the submodule pin and the extensions.toml version, pushes to the fork, and opens upstream PR
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (e.g. v0.1.0)"
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: Publish to zed-extensions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.COMMITTER_TOKEN }}
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG=${{ github.event.inputs.tag || github.ref_name }}
+          VERSION=${TAG#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update zed-industries/extensions submodule
+        run: |
+          git submodule update --init --recursive
+          cd extensions
+          git checkout main
+          git pull origin main
+
+      - name: Update extension manifest
+        run: |
+          cd extensions
+          # Update the extension entry in extensions.toml
+          # This is a simplified example - actual implementation depends on zed-extensions structure
+          sed -i "s/version = \".*\"/version = \"${{ steps.version.outputs.version }}\"/" extensions/zed-xml-language-server.toml
+
+      - name: Commit and push
+        run: |
+          cd extensions
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: update zed-xml-language-server to ${{ steps.version.outputs.version }}"
+          git push origin HEAD:update/zed-xml-language-server-${{ steps.version.outputs.version }}
+
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.COMMITTER_TOKEN }}
+          repo: zed-industries/extensions
+          base: main
+          head: update/zed-xml-language-server-${{ steps.version.outputs.version }}
+          title: "chore: update zed-xml-language-server to ${{ steps.version.outputs.version }}"
+          body: |
+            Automated update of zed-xml-language-server extension.
+            
+            This PR updates the extension to version ${{ steps.version.outputs.version }}.

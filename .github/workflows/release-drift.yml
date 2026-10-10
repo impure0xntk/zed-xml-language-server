@@ -1,0 +1,52 @@
+name: Release Drift Check
+
+# Weekly check that the asset names this extension computes still match LemMinX's published release assets
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Every Monday 6 AM UTC
+  workflow_dispatch:
+
+jobs:
+  check-assets:
+    name: Check Release Assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Check asset naming
+        run: |
+          # Fetch latest LemMinX release
+          RELEASE=$(curl -s https://api.github.com/repos/eclipse-lemminx/lemminx/releases/latest)
+          TAG=$(echo "$RELEASE" | jq -r .tag_name)
+          VERSION=${TAG#v}
+          
+          echo "Latest LemMinX version: $VERSION"
+          echo "$RELEASE" | jq -r '.assets[].name'
+          
+          # Expected asset names per platform
+          for PLATFORM in "linux-x86_64" "linux-aarch64" "macos-x86_64" "macos-aarch64" "windows-x86_64"; do
+            EXPECTED="lemminx-${PLATFORM}-${VERSION}"
+            if echo "$RELEASE" | jq -e ".assets[] | select(.name == \"$EXPECTED\")" > /dev/null; then
+              echo "✓ Found: $EXPECTED"
+            else
+              echo "✗ MISSING: $EXPECTED"
+              exit 1
+            fi
+          done
+          
+          echo "All expected assets found!"
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: 'impure0xntk',
+              repo: 'zed-xml-language-server',
+              title: 'LemMinX Release Asset Drift Detected',
+              body: 'The weekly release drift check failed. LemMinX may have changed their asset naming convention. Please update the asset name generation in src/lib.rs.',
+              labels: ['bug', 'maintenance']
+            })

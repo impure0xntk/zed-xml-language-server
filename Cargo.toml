@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "zed-xml-language-server"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Zed extension for XML language support powered by Eclipse LemMinX"
+repository = "https://github.com/impure0xntk/zed-xml-language-server"
+authors = ["impure0xntk <impure0xntk@users.noreply.github.com>"]
+publish = false
+categories = ["development-tools", "editor-extensions"]
+keywords = ["zed", "xml", "lsp", "lemminx", "language-server"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+zed_extension_api = "0.7"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+semver = "1.0"
+
+[dev-dependencies]
+toml = "0.8"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true

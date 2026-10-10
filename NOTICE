@@ -1,0 +1,46 @@
+Third-Party Licenses Notice
+============================
+
+This extension bundles/depends on the following third-party components.
+See LICENSE file for full license texts.
+
+Eclipse LemMinX
+---------------
+- Repository: https://github.com/eclipse-lemminx/lemminx
+- License: Eclipse Public License 2.0 (EPL-2.0)
+- Used as: Language Server Protocol implementation for XML
+- Binary Distribution: LemMinX native binaries are obtained from Red Hat's
+  vscode-xml releases (https://github.com/redhat-developer/vscode-xml)
+  under the same EPL-2.0 license.
+
+Red Hat vscode-xml
+------------------
+- Repository: https://github.com/redhat-developer/vscode-xml
+- License: Eclipse Public License 2.0 (EPL-2.0)
+- Used as: Source of pre-built LemMinX native binaries for Linux, macOS, Windows
+
+zed_extension_api
+-----------------
+- Repository: https://github.com/zed-industries/zed/tree/main/crates/extension_api
+- License: MIT OR Apache-2.0
+- Used as: Zed extension API crate
+
+Tree-sitter XML
+---------------
+- Repository: https://github.com/tree-sitter-grammars/tree-sitter-xml
+- License: MIT
+- Used as: XML grammar for syntax highlighting
+
+Rust Dependencies
+-----------------
+See Cargo.lock for complete list. Major dependencies:
+- anyhow (MIT OR Apache-2.0)
+- serde (MIT OR Apache-2.0)
+- serde_json (MIT OR Apache-2.0)
+
+All Rust dependencies are dual-licensed under MIT OR Apache-2.0.
+
+Nix Packages
+------------
+Development environment uses packages from nixpkgs (MIT License).
+See flake.nix for complete list.
